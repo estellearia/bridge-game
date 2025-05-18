@@ -2,38 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rebuilding Connection</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-    body {
+    html, body {
       margin: 0;
-      padding: 20px 10px;
+      padding: 0;
       background: black;
       color: white;
       font-family: 'Press Start 2P', monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      box-sizing: border-box;
     }
 
-    #container {
+    #gameWrapper {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
-      width: 100%;
-      max-width: 360px;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 10px 0;
     }
 
     #loveMeter {
       display: flex;
       gap: 6px;
-      justify-content: center;
+      margin-bottom: 10px;
     }
 
     #loveMeter img {
@@ -43,9 +37,8 @@
     }
 
     canvas {
-      width: 100%;
-      max-width: 320px;
-      aspect-ratio: 1 / 1;
+      width: 320px;
+      height: 320px;
       border: 3px solid white;
       background: #000;
       image-rendering: pixelated;
@@ -56,6 +49,7 @@
     #message {
       font-size: 10px;
       color: #87cefa;
+      margin-top: 10px;
       text-align: center;
       min-height: 24px;
     }
@@ -110,8 +104,8 @@
       font-size: 10px;
       cursor: pointer;
       transition: all 0.2s ease;
+      user-select: none;
       min-width: 80px;
-      text-align: center;
     }
 
     button:hover {
@@ -121,188 +115,166 @@
   </style>
 </head>
 <body>
+  <div id="gameWrapper">
+    <div id="loveMeter">
+      <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+      <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+      <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+      <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+      <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+    </div>
 
-<div id="container">
-  <div id="loveMeter" aria-label="Love meter progress">
-    <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
-    <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
-    <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
-    <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
-    <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+    <canvas id="bridgeCanvas"></canvas>
+    <div id="message">Tap the tiles in order to build a bridge and reach Aria.</div>
   </div>
 
-  <canvas id="bridgeCanvas" aria-label="Bridge building puzzle" tabindex="0"></canvas>
-
-  <div id="message" role="alert" aria-live="polite">Tap the tiles in order to build a bridge and reach Aria.</div>
-</div>
-
-<div id="endDialogue" style="display: none;">
-  <div id="dialogueBox">
-    <p id="dialogueText"></p>
-    <div id="buttonRow">
-      <button id="retryBtn" type="button">Retry</button>
-      <button id="continueBtn" type="button">Continue</button>
+  <div id="endDialogue" style="display: none;">
+    <div id="dialogueBox">
+      <p id="dialogueText"></p>
+      <div id="buttonRow">
+        <button id="retryBtn">Retry</button>
+        <button id="continueBtn">Continue</button>
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-  const canvas = document.getElementById("bridgeCanvas");
-  const ctx = canvas.getContext("2d");
+  <script>
+    const canvas = document.getElementById("bridgeCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = 320;
+    canvas.height = 320;
 
-  canvas.width = 320;
-  canvas.height = 320;
+    const tileSize = 32;
+    const cols = 10;
+    const rows = 10;
 
-  const tileSize = 32;
-  const cols = 10;
-  const rows = 10;
+    const avatar = new Image();
+    avatar.src = "https://pixels.crd.co/assets/images/gallery100/641776f2.gif?v=99d3974e";
 
-  const avatar = new Image();
-  avatar.src = "https://pixels.crd.co/assets/images/gallery100/641776f2.gif?v=99d3974e";
+    const emptyHeart = "https://i.imgur.com/sgbCLlS.png";
+    const filledHeart = "https://i.imgur.com/B6yELT6.png";
 
-  const emptyHeart = "https://i.imgur.com/sgbCLlS.png";
-  const filledHeart = "https://i.imgur.com/B6yELT6.png";
+    const rounds = [
+      [[4,6], [4,5], [4,4], [4,3], [4,2], [4,1]],
+      [[3,6], [3,5], [4,5], [4,4], [5,4], [5,3], [5,2]],
+      [[2,7], [3,7], [4,7], [4,6], [4,5], [3,5], [2,5], [2,4]],
+      [[5,8], [5,7], [4,7], [4,6], [3,6], [3,5], [3,4], [4,4], [4,3]],
+      [[1,9], [2,9], [3,9], [3,8], [4,8], [4,7], [5,7], [5,6], [6,6], [6,5], [6,4]]
+    ];
 
-  const rounds = [
-    [[4,6], [4,5], [4,4], [4,3], [4,2], [4,1]],
-    [[3,6], [3,5], [4,5], [4,4], [5,4], [5,3], [5,2]],
-    [[2,7], [3,7], [4,7], [4,6], [4,5], [3,5], [2,5], [2,4]],
-    [[5,8], [5,7], [4,7], [4,6], [3,6], [3,5], [3,4], [4,4], [4,3]],
-    [[1,9], [2,9], [3,9], [3,8], [4,8], [4,7], [5,7], [5,6], [6,6], [6,5], [6,4]]
-  ];
+    let currentRound = 0;
+    let bridgePath = rounds[currentRound];
+    let builtTiles = [];
+    let bgTimeout;
 
-  let currentRound = 0;
-  let bridgePath = rounds[currentRound];
-  let builtTiles = [];
-  let bgTimeout;
+    function updateLoveMeter() {
+      document.querySelectorAll("#loveMeter img").forEach((img, i) => {
+        img.src = i < currentRound ? filledHeart : emptyHeart;
+      });
+    }
 
-  function updateLoveMeter() {
-    const heartImgs = document.querySelectorAll("#loveMeter img");
-    heartImgs.forEach((img, i) => {
-      img.src = i < currentRound ? filledHeart : emptyHeart;
-    });
-  }
-
-  function drawGrid() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        const isBridgeTile = bridgePath.some(tile => tile[0] === x && tile[1] === y);
-        const isBuilt = builtTiles.some(tile => tile[0] === x && tile[1] === y);
-        const px = x * tileSize;
-        const py = y * tileSize;
-
-        if (isBuilt) {
-          ctx.fillStyle = "#ccc";
-        } else if (isBridgeTile) {
-          ctx.fillStyle = "#222";
-        } else {
-          ctx.fillStyle = "#000";
+    function drawGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const isBridgeTile = bridgePath.some(tile => tile[0] === x && tile[1] === y);
+          const isBuilt = builtTiles.some(tile => tile[0] === x && tile[1] === y);
+          const px = x * tileSize;
+          const py = y * tileSize;
+          ctx.fillStyle = isBuilt ? "#ccc" : isBridgeTile ? "#222" : "#000";
+          ctx.fillRect(px, py, tileSize, tileSize);
+          ctx.strokeStyle = "#444";
+          ctx.strokeRect(px, py, tileSize, tileSize);
         }
-
-        ctx.fillRect(px, py, tileSize, tileSize);
-        ctx.strokeStyle = "#444";
-        ctx.strokeRect(px, py, tileSize, tileSize);
+      }
+      if (builtTiles.length === bridgePath.length) {
+        const [lastX, lastY] = bridgePath[bridgePath.length - 1];
+        ctx.drawImage(avatar, lastX * tileSize + 2, lastY * tileSize + 2, tileSize - 4, tileSize - 4);
       }
     }
 
-    if (builtTiles.length === bridgePath.length) {
-      const [lastX, lastY] = bridgePath[bridgePath.length - 1];
-      ctx.drawImage(avatar, lastX * tileSize + 2, lastY * tileSize + 2, tileSize - 4, tileSize - 4);
+    function nextRound() {
+      currentRound++;
+      updateLoveMeter();
+      if (currentRound < rounds.length) {
+        bridgePath = rounds[currentRound];
+        builtTiles = [];
+        document.getElementById('message').textContent = `Round ${currentRound + 1}: Keep building the bridge...`;
+        drawGrid();
+      } else {
+        document.getElementById('message').textContent = "All bridges rebuilt...";
+        setTimeout(showFinalDialogue, 1500);
+      }
     }
-  }
 
-  function nextRound() {
-    currentRound++;
-    updateLoveMeter();
+    function showFinalDialogue() {
+      document.getElementById('endDialogue').style.display = 'flex';
+      const text = "*You reached me...\nAnd rebuilt everything we had.*";
+      const dialogueText = document.getElementById('dialogueText');
+      dialogueText.textContent = '';
+      let i = 0;
+      function typeChar() {
+        if (i < text.length) {
+          dialogueText.textContent += text[i++];
+          setTimeout(typeChar, 50);
+        }
+      }
+      typeChar();
+    }
 
-    if (currentRound < rounds.length) {
+    function retryGame() {
+      currentRound = 0;
       bridgePath = rounds[currentRound];
       builtTiles = [];
-      document.getElementById('message').textContent = `Round ${currentRound + 1}: Keep building the bridge...`;
+      document.getElementById('endDialogue').style.display = 'none';
+      document.getElementById('message').textContent = "Tap the tiles in order to build a bridge and reach Aria.";
+      updateLoveMeter();
       drawGrid();
-    } else {
-      document.getElementById('message').textContent = "All bridges rebuilt...";
-      setTimeout(showFinalDialogue, 1500);
-    }
-  }
-
-  function showFinalDialogue() {
-    document.getElementById('endDialogue').style.display = 'flex';
-    const text = "*You reached me...\nAnd rebuilt everything we had.*";
-    const dialogueText = document.getElementById('dialogueText');
-    dialogueText.textContent = '';
-
-    let i = 0;
-    function typeChar() {
-      if (i < text.length) {
-        dialogueText.textContent += text[i];
-        i++;
-        setTimeout(typeChar, 50);
+      if (bgTimeout) {
+        clearTimeout(bgTimeout);
+        canvas.style.backgroundColor = '#000';
       }
     }
-    typeChar();
-  }
 
-  function retryGame() {
-    currentRound = 0;
-    bridgePath = rounds[currentRound];
-    builtTiles = [];
-    document.getElementById('endDialogue').style.display = 'none';
-    document.getElementById('message').textContent = "Tap the tiles in order to build a bridge and reach Aria.";
+    function continueGame() {
+      document.getElementById('endDialogue').style.display = 'none';
+      if (window.parent !== window) {
+        window.parent.postMessage('bridgeComplete', '*');
+      } else {
+        window.location.href = '#bridgecorrect';
+      }
+    }
+
+    function handleClick(event) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = Math.floor((event.clientX - rect.left) * scaleX / tileSize);
+      const y = Math.floor((event.clientY - rect.top) * scaleY / tileSize);
+      const nextTile = bridgePath[builtTiles.length];
+
+      if (x === nextTile[0] && y === nextTile[1]) {
+        builtTiles.push([x, y]);
+        drawGrid();
+        if (builtTiles.length === bridgePath.length) {
+          document.getElementById('message').textContent = "Connection rebuilt!";
+          setTimeout(nextRound, 1500);
+        }
+      } else if (bridgePath.some(tile => tile[0] === x && tile[1] === y)) {
+        builtTiles = [];
+        drawGrid();
+        document.getElementById('message').textContent = "Wrong tile! Bridge collapsed, try again.";
+        canvas.style.backgroundColor = '#800000';
+        if (bgTimeout) clearTimeout(bgTimeout);
+        bgTimeout = setTimeout(() => canvas.style.backgroundColor = '#000', 300);
+      }
+    }
+
+    canvas.addEventListener("click", handleClick);
+    document.getElementById('retryBtn').addEventListener('click', retryGame);
+    document.getElementById('continueBtn').addEventListener('click', continueGame);
     updateLoveMeter();
     drawGrid();
-    if (bgTimeout) {
-      clearTimeout(bgTimeout);
-      canvas.style.backgroundColor = '#000';
-      bgTimeout = null;
-    }
-  }
-
-  function continueGame() {
-    document.getElementById('endDialogue').style.display = 'none';
-    if (window.parent !== window) {
-      window.parent.postMessage('bridgeComplete', '*');
-    } else {
-      window.location.href = '#bridgecorrect';
-    }
-  }
-
-  function handleClick(event) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-
-    const x = Math.floor((event.clientX - rect.left) * scaleX / tileSize);
-    const y = Math.floor((event.clientY - rect.top) * scaleY / tileSize);
-
-    const nextTile = bridgePath[builtTiles.length];
-
-    if (x === nextTile[0] && y === nextTile[1]) {
-      builtTiles.push([x, y]);
-      drawGrid();
-      if (builtTiles.length === bridgePath.length) {
-        document.getElementById('message').textContent = "Connection rebuilt!";
-        setTimeout(nextRound, 1500);
-      }
-    } else if (bridgePath.some(tile => tile[0] === x && tile[1] === y)) {
-      builtTiles = [];
-      drawGrid();
-      document.getElementById('message').textContent = "Wrong tile! Bridge collapsed, try again.";
-      canvas.style.backgroundColor = '#800000';
-      if (bgTimeout) clearTimeout(bgTimeout);
-      bgTimeout = setTimeout(() => { canvas.style.backgroundColor = '#000'; }, 300);
-    }
-  }
-
-  canvas.addEventListener("click", handleClick);
-  document.getElementById('retryBtn').addEventListener('click', retryGame);
-  document.getElementById('continueBtn').addEventListener('click', continueGame);
-
-  updateLoveMeter();
-  drawGrid();
-</script>
-
+  </script>
 </body>
 </html>
