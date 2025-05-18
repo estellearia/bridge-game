@@ -54,6 +54,57 @@
       text-align: center;
       max-width: 80vw;
     }
+	
+    #endDialogue {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Press Start 2P', monospace;
+      color: white;
+      z-index: 10;
+    }
+    
+    #dialogueBox {
+      background: #111;
+      border: 3px solid white;
+      padding: 20px;
+      width: 90%;
+      max-width: 300px;
+      text-align: left;
+      box-shadow: 0 0 10px #87cefa;
+    }
+    
+    #dialogueText {
+      font-size: 10px;
+      line-height: 1.5;
+      white-space: pre-line;
+      margin-bottom: 20px;
+      color: #87cefa;
+    }
+    
+    #retryBtn {
+      background: black;
+      border: 2px solid white;
+      color: white;
+      font-family: 'Press Start 2P', monospace;
+      padding: 5px 10px;
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    #retryBtn:hover {
+      background: white;
+      color: black;
+    }
+
   </style>
 </head>
 <body>
@@ -68,6 +119,13 @@
 
 <canvas id="bridgeCanvas" width="400" height="400"></canvas>
 <div id="message">Tap the tiles in order to build a bridge and reach Aria.</div>
+<div id="endDialogue" style="display: none;">
+  <div id="dialogueBox">
+    <p id="dialogueText"></p>
+    <button id="retryBtn" onclick="retryGame()">Retry?</button>
+  </div>
+</div>
+
 
 <script>
   const canvas = document.getElementById("bridgeCanvas");
@@ -142,7 +200,7 @@
       document.getElementById('message').textContent = `Round ${currentRound + 1}: Keep building the bridge...`;
       setTimeout(drawGrid, 500);
     } else {
-      document.getElementById('message').textContent = "All bridges rebuilt. Connection fully restored 💖";
+      document.getElementById('message').textContent = "All bridges rebuilt...";
       updateLoveMeter();
       console.log("✅ Game complete. Posting message to parent.");
       setTimeout(() => {
@@ -150,6 +208,32 @@
       }, 2500);
     }
   }
+   function showFinalDialogue() {
+     document.getElementById('endDialogue').style.display = 'flex';
+     const text = "*You reached me...\nAnd rebuilt everything we had.*";
+     const dialogueText = document.getElementById('dialogueText');
+     dialogueText.textContent = '';
+     
+     let i = 0;
+     function typeChar() {
+       if (i < text.length) {
+         dialogueText.textContent += text[i];
+         i++;
+         setTimeout(typeChar, 50);
+       }
+     }
+     typeChar();
+   }
+   
+   function retryGame() {
+     currentRound = 0;
+     bridgePath = rounds[currentRound];
+     builtTiles = [];
+     document.getElementById('endDialogue').style.display = 'none';
+     updateLoveMeter();
+     document.getElementById('message').textContent = "Tap the tiles in order to build a bridge and reach Aria.";
+     drawGrid();
+   }
 
   function handleClick(event) {
     const rect = canvas.getBoundingClientRect();
