@@ -59,11 +59,11 @@
 <body>
 
 <div id="loveMeter">
-  <img src="https://i.imgur.com/sgbCLlS.png"/>
-  <img src="https://i.imgur.com/sgbCLlS.png"/>
-  <img src="https://i.imgur.com/sgbCLlS.png"/>
-  <img src="https://i.imgur.com/sgbCLlS.png"/>
-  <img src="https://i.imgur.com/sgbCLlS.png"/>
+  <img src="https://i.imgur.com/sgbCLlS.png" />
+  <img src="https://i.imgur.com/sgbCLlS.png" />
+  <img src="https://i.imgur.com/sgbCLlS.png" />
+  <img src="https://i.imgur.com/sgbCLlS.png" />
+  <img src="https://i.imgur.com/sgbCLlS.png" />
 </div>
 
 <canvas id="bridgeCanvas" width="400" height="400"></canvas>
@@ -80,8 +80,8 @@
   const avatar = new Image();
   avatar.src = "https://pixels.crd.co/assets/images/gallery100/641776f2.gif?v=99d3974e";
 
-const emptyHeart = "https://i.imgur.com/sgbCLlS.png";
-const filledHeart = "https://i.imgur.com/B6yELT6.png";
+  const emptyHeart = "https://i.imgur.com/sgbCLlS.png";
+  const filledHeart = "https://i.imgur.com/B6yELT6.png";
 
   const rounds = [
     [[4,6], [4,5], [4,4], [4,3], [4,2], [4,1]],
@@ -132,7 +132,10 @@ const filledHeart = "https://i.imgur.com/B6yELT6.png";
 
   function nextRound() {
     currentRound++;
+    console.log(`➡️ Moving to round ${currentRound + 1}`);
+
     updateLoveMeter();
+
     if (currentRound < rounds.length) {
       bridgePath = rounds[currentRound];
       builtTiles = [];
@@ -141,6 +144,7 @@ const filledHeart = "https://i.imgur.com/B6yELT6.png";
     } else {
       document.getElementById('message').textContent = "All bridges rebuilt. Connection fully restored 💖";
       updateLoveMeter();
+      console.log("✅ Game complete. Posting message to parent.");
       setTimeout(() => {
         window.parent.postMessage('bridgeComplete', '*');
       }, 2500);
@@ -157,13 +161,15 @@ const filledHeart = "https://i.imgur.com/B6yELT6.png";
 
     const nextTile = bridgePath[builtTiles.length];
 
+    console.log(`🖱️ Click at (${x}, ${y}) — expecting (${nextTile[0]}, ${nextTile[1]})`);
+
     if (x === nextTile[0] && y === nextTile[1]) {
       builtTiles.push([x, y]);
       drawGrid();
 
       if (builtTiles.length === bridgePath.length) {
         document.getElementById('message').textContent = "Connection rebuilt!";
-        setTimeout(nextRound, 2000);
+        setTimeout(nextRound, 1500);
       }
     } else {
       canvas.style.backgroundColor = 'darkred';
@@ -178,8 +184,10 @@ const filledHeart = "https://i.imgur.com/B6yELT6.png";
   avatar.onload = () => {
     updateLoveMeter();
     drawGrid();
+    console.log("🎮 Game ready! Round 1 starting.");
   };
 </script>
+
 
 </body>
 </html>
