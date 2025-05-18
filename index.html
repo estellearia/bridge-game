@@ -9,22 +9,30 @@
 
     body {
       margin: 0;
-      font-family: 'Press Start 2P', monospace;
+      padding: 20px 10px;
       background: black;
       color: white;
-      user-select: none;
-      padding: 10px 0;
-      max-width: 340px;
-      margin-left: auto;
-      margin-right: auto;
-      height: auto;
-      min-height: auto;
+      font-family: 'Press Start 2P', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    #container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      max-width: 360px;
     }
 
     #loveMeter {
       display: flex;
       gap: 6px;
-      margin-bottom: 10px;
       justify-content: center;
     }
 
@@ -43,16 +51,12 @@
       image-rendering: pixelated;
       cursor: pointer;
       display: block;
-      margin: 0 auto;
-      transition: background 0.1s;
     }
 
     #message {
       font-size: 10px;
       color: #87cefa;
-      margin-top: 10px;
       text-align: center;
-      max-width: 80vw;
       min-height: 24px;
     }
 
@@ -67,8 +71,6 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-family: 'Press Start 2P', monospace;
-      color: white;
       z-index: 10;
       padding: 20px;
       box-sizing: border-box;
@@ -108,7 +110,6 @@
       font-size: 10px;
       cursor: pointer;
       transition: all 0.2s ease;
-      user-select: none;
       min-width: 80px;
       text-align: center;
     }
@@ -121,21 +122,19 @@
 </head>
 <body>
 
-<!-- ... everything else is unchanged ... -->
-<!-- keep all the same HTML content and JS below -->
+<div id="container">
+  <div id="loveMeter" aria-label="Love meter progress">
+    <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+    <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+    <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+    <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+    <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+  </div>
 
+  <canvas id="bridgeCanvas" aria-label="Bridge building puzzle" tabindex="0"></canvas>
 
-
-<div id="loveMeter" aria-label="Love meter progress">
-  <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
-  <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
-  <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
-  <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
-  <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+  <div id="message" role="alert" aria-live="polite">Tap the tiles in order to build a bridge and reach Aria.</div>
 </div>
-
-<canvas id="bridgeCanvas" aria-label="Bridge building puzzle" tabindex="0"></canvas>
-<div id="message" role="alert" aria-live="polite">Tap the tiles in order to build a bridge and reach Aria.</div>
 
 <div id="endDialogue" style="display: none;">
   <div id="dialogueBox">
@@ -151,7 +150,6 @@
   const canvas = document.getElementById("bridgeCanvas");
   const ctx = canvas.getContext("2d");
 
-  // Internal resolution for crisp pixel rendering
   canvas.width = 320;
   canvas.height = 320;
 
@@ -226,7 +224,6 @@
       drawGrid();
     } else {
       document.getElementById('message').textContent = "All bridges rebuilt...";
-      updateLoveMeter();
       setTimeout(showFinalDialogue, 1500);
     }
   }
@@ -265,8 +262,6 @@
 
   function continueGame() {
     document.getElementById('endDialogue').style.display = 'none';
-
-    // Tell Carrd parent page to update hash
     if (window.parent !== window) {
       window.parent.postMessage('bridgeComplete', '*');
     } else {
@@ -287,7 +282,6 @@
     if (x === nextTile[0] && y === nextTile[1]) {
       builtTiles.push([x, y]);
       drawGrid();
-
       if (builtTiles.length === bridgePath.length) {
         document.getElementById('message').textContent = "Connection rebuilt!";
         setTimeout(nextRound, 1500);
@@ -303,7 +297,6 @@
   }
 
   canvas.addEventListener("click", handleClick);
-
   document.getElementById('retryBtn').addEventListener('click', retryGame);
   document.getElementById('continueBtn').addEventListener('click', continueGame);
 
