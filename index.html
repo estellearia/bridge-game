@@ -288,4 +288,21 @@
     } else if (bridgePath.some(tile => tile[0] === x && tile[1] === y)) {
       builtTiles = [];
       drawGrid();
-      document.getElementById('message').textContent = "Wrong tile! Bridge collapsed,
+      document.getElementById('message').textContent = "Wrong tile! Bridge collapsed, try again.";
+      canvas.style.backgroundColor = '#800000';
+      if (bgTimeout) clearTimeout(bgTimeout);
+      bgTimeout = setTimeout(() => { canvas.style.backgroundColor = '#000'; }, 300);
+    }
+  }
+
+  canvas.addEventListener("click", handleClick);
+
+  document.getElementById('retryBtn').addEventListener('click', retryGame);
+  document.getElementById('continueBtn').addEventListener('click', continueGame);
+
+  updateLoveMeter();
+  drawGrid();
+</script>
+
+</body>
+</html>
