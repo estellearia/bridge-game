@@ -31,6 +31,7 @@
       background: #000;
       image-rendering: pixelated;
       cursor: pointer;
+      display: block;
     }
 
     #message {
@@ -56,26 +57,25 @@
   const rows = 10;
 
   const avatar = new Image();
-  avatar.src = "https://pixels.crd.co/assets/images/gallery100/641776f2.gif?v=99d3974e"; // Waving avatar
+  avatar.src = "https://pixels.crd.co/assets/images/gallery100/641776f2.gif?v=99d3974e";
 
-  const bridgePath = [ [4,6], [4,5], [4,4], [4,3], [4,2], [4,1] ];
-
+  const bridgePath = [[4,6], [4,5], [4,4], [4,3], [4,2], [4,1]];
   let builtTiles = [];
 
   function drawGrid() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for(let y = 0; y < rows; y++) {
-      for(let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
         const isChasm = (y > 0 && y < 7 && x === 4);
         const px = x * tileSize;
         const py = y * tileSize;
 
         if (builtTiles.some(tile => tile[0] === x && tile[1] === y)) {
-          ctx.fillStyle = "#ccc"; // Bridge tile
+          ctx.fillStyle = "#ccc";
         } else if (isChasm) {
-          ctx.fillStyle = "#222"; // Chasm
+          ctx.fillStyle = "#222";
         } else {
-          ctx.fillStyle = "#000"; // Empty
+          ctx.fillStyle = "#000";
         }
 
         ctx.fillRect(px, py, tileSize, tileSize);
@@ -85,19 +85,17 @@
     }
 
     if (builtTiles.length === bridgePath.length) {
-      ctx.drawImage(avatar, 4 * tileSize + 2, 0 * tileSize + 2, tileSize - 4, tileSize - 4);
+      ctx.drawImage(avatar, 4 * tileSize + 2, 2, tileSize - 4, tileSize - 4);
     }
   }
 
   function handleClick(event) {
     const rect = canvas.getBoundingClientRect();
-
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
     const x = Math.floor((event.clientX - rect.left) * scaleX / tileSize);
     const y = Math.floor((event.clientY - rect.top) * scaleY / tileSize);
-
     const nextTile = bridgePath[builtTiles.length];
 
     if (x === nextTile[0] && y === nextTile[1]) {
@@ -111,7 +109,6 @@
         }, 2500);
       }
     } else {
-      // Flash red for wrong click
       canvas.style.transition = 'background 0.1s';
       canvas.style.backgroundColor = 'darkred';
       setTimeout(() => {
@@ -122,9 +119,7 @@
 
   canvas.addEventListener("click", handleClick);
 
-  avatar.onload = () => {
-    drawGrid();
-  };
+  avatar.onload = () => drawGrid();
   avatar.onerror = () => {
     console.warn("Avatar image failed to load");
     drawGrid();
