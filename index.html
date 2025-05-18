@@ -188,27 +188,27 @@
     }
   }
 
-  function nextRound() {
-    currentRound++;
-    console.log(`➡️ Moving to round ${currentRound + 1}`);
+function nextRound() {
+  currentRound++;
+  console.log(`➡️ Moving to round ${currentRound + 1}`);
 
-    updateLoveMeter();
-
-    if (currentRound < rounds.length) {
-      bridgePath = rounds[currentRound];
-      builtTiles = [];
-      document.getElementById('message').textContent = `Round ${currentRound + 1}: Keep building the bridge...`;
-      setTimeout(drawGrid, 500);
-    } } else {
-  document.getElementById('message').textContent = "All bridges rebuilt...";
   updateLoveMeter();
-  setTimeout(() => {
-    showFinalDialogue(); // ⬅️ Show final screen with retry button
-    window.parent.postMessage('bridgeComplete', '*');
-  }, 2000);
+
+  if (currentRound < rounds.length) {
+    bridgePath = rounds[currentRound];
+    builtTiles = [];
+    document.getElementById('message').textContent = `Round ${currentRound + 1}: Keep building the bridge...`;
+    setTimeout(drawGrid, 500);
+  } else {
+    document.getElementById('message').textContent = "All bridges rebuilt...";
+    updateLoveMeter();
+    setTimeout(() => {
+      showFinalDialogue(); // ⬅️ Show final screen with retry button
+      window.parent.postMessage('bridgeComplete', '*');
+    }, 2000);
+  }
 }
 
-  }
    function showFinalDialogue() {
      document.getElementById('endDialogue').style.display = 'flex';
      const text = "*You reached me...\nAnd rebuilt everything we had.*";
