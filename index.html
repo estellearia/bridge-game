@@ -58,7 +58,6 @@
   const avatar = new Image();
   avatar.src = "https://pixels.crd.co/assets/images/gallery100/641776f2.gif?v=99d3974e"; // Waving avatar
 
-  // The path from bottom to top to build bridge (your choice)
   const bridgePath = [ [4,6], [4,5], [4,4], [4,3], [4,2], [4,1] ];
 
   let builtTiles = [];
@@ -85,7 +84,6 @@
       }
     }
 
-    // Draw avatar at the top of the bridge if bridge complete
     if (builtTiles.length === bridgePath.length) {
       ctx.drawImage(avatar, 4 * tileSize + 2, 0 * tileSize + 2, tileSize - 4, tileSize - 4);
     }
