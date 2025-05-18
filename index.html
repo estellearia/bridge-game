@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rebuilding Connection</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    :root {
+      --canvas-size: 90vw;
+      --max-canvas-size: 360px;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Press Start 2P', monospace;
+      background: black;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    canvas {
+      width: min(var(--canvas-size), var(--max-canvas-size));
+      height: auto;
+      border: 3px solid white;
+      background: #000;
+      image-rendering: pixelated;
+      cursor: pointer;
+    }
+
+    #message {
+      font-size: 10px;
+      color: #87cefa;
+      margin-top: 10px;
+      text-align: center;
+      max-width: 80vw;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="bridgeCanvas" width="400" height="400"></canvas>
+<div id="message">Tap the tiles in order to build a bridge and reach Aria.</div>
+
+<script>
+  const canvas = document.getElementById("bridgeCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const tileSize = 40;
+  const cols = 10;
+  const rows = 10;
+
+  const avatar = new Image();
+  avatar.src = "https://pixels.crd.co/assets/images/gallery100/641776f2.gif?v=99d3974e"; // Waving avatar
+
+  // The path from bottom to top to build bridge (your choice)
+  const bridgePath = [ [4,6], [4,5], [4,4], [4,3], [4,2], [4,1] ];
+
+  let builtTiles = [];
+
+  function drawGrid() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for(let y = 0; y < rows; y++) {
+      for(let x = 0; x < cols; x++) {
+        const isChasm = (y > 0 && y < 7 && x === 4);
+        const px = x * tileSize;
+        const py = y * tileSize;
+
+        if (builtTiles.some(tile => tile[0] === x && tile[1] === y)) {
+          ctx.fillStyle = "#ccc"; // Bridge tile
+        } else if (isChasm) {
+          ctx.fillStyle = "#222"; // Chasm
+        } else {
+          ctx.fillStyle = "#000"; // Empty
+        }
+
+        ctx.fillRect(px, py, tileSize, tileSize);
+        ctx.strokeStyle = "#444";
+        ctx.strokeRect(px, py, tileSize, tileSize);
+      }
+    }
+
+    // Draw avatar at the top of the bridge if bridge complete
+    if (builtTiles.length === bridgePath.length) {
+      ctx.drawImage(avatar, 4 * tileSize + 2, 0 * tileSize + 2, tileSize - 4, tileSize - 4);
+    }
+  }
+
+  function handleClick(event) {
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.floor((event.clientX - rect.left) / tileSize);
+    const y = Math.floor((event.clientY - rect.top) / tileSize);
+    const nextTile = bridgePath[builtTiles.length];
+
+    if (x === nextTile[0] && y === nextTile[1]) {
+      builtTiles.push([x, y]);
+      drawGrid();
+
+      if (builtTiles.length === bridgePath.length) {
+        document.getElementById('message').textContent = "Connection rebuilt!";
+        setTimeout(() => {
+          window.parent.postMessage('bridgeComplete', '*');
+        }, 2500);
+      }
+    } else {
+      // Flash red for wrong click
+      canvas.style.transition = 'background 0.1s';
+      canvas.style.backgroundColor = 'darkred';
+      setTimeout(() => {
+        canvas.style.backgroundColor = '';
+      }, 100);
+    }
+  }
+
+  canvas.addEventListener("click", handleClick);
+  avatar.onload = drawGrid;
+</script>
+
+</body>
+</html>
