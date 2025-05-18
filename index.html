@@ -24,6 +24,19 @@
       height: 100vh;
     }
 
+    #loveMeter {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+      user-select: none;
+    }
+
+    #loveMeter img {
+      width: 20px;
+      height: 20px;
+      image-rendering: pixelated;
+    }
+
     canvas {
       width: min(var(--canvas-size), var(--max-canvas-size));
       height: auto;
@@ -45,6 +58,14 @@
 </head>
 <body>
 
+<div id="loveMeter">
+  <img src="https://i.imgur.com/8O3Tgff.png" />
+  <img src="https://i.imgur.com/8O3Tgff.png" />
+  <img src="https://i.imgur.com/8O3Tgff.png" />
+  <img src="https://i.imgur.com/8O3Tgff.png" />
+  <img src="https://i.imgur.com/8O3Tgff.png" />
+</div>
+
 <canvas id="bridgeCanvas" width="400" height="400"></canvas>
 <div id="message">Tap the tiles in order to build a bridge and reach Aria.</div>
 
@@ -57,17 +78,35 @@
   const rows = 10;
 
   const avatar = new Image();
-  avatar.src = "https://pixels.crd.co/assets/images/gallery100/641776f2.gif?v=99d3974e"; // Waving Aria
+  avatar.src = "https://pixels.crd.co/assets/images/gallery100/641776f2.gif?v=99d3974e";
 
-  const bridgePath = [ [4,6], [4,5], [4,4], [4,3], [4,2], [4,1] ];
+  const emptyHeart = "https://i.imgur.com/8O3Tgff.png";
+  const filledHeart = "https://i.imgur.com/U8O5P6t.png";
 
+  const rounds = [
+    [[4,6], [4,5], [4,4], [4,3], [4,2], [4,1]],
+    [[3,6], [3,5], [4,5], [4,4], [5,4], [5,3], [5,2]],
+    [[2,7], [3,7], [4,7], [4,6], [4,5], [3,5], [2,5], [2,4]],
+    [[5,8], [5,7], [4,7], [4,6], [3,6], [3,5], [3,4], [4,4], [4,3]],
+    [[1,9], [2,9], [3,9], [3,8], [4,8], [4,7], [5,7], [5,6], [6,6], [6,5], [6,4]]
+  ];
+
+  let currentRound = 0;
+  let bridgePath = rounds[currentRound];
   let builtTiles = [];
+
+  function updateLoveMeter() {
+    const heartImgs = document.querySelectorAll("#loveMeter img");
+    heartImgs.forEach((img, i) => {
+      img.src = i < currentRound ? filledHeart : emptyHeart;
+    });
+  }
 
   function drawGrid() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
-        const isChasm = (y > 0 && y < 7 && x === 4);
+        const isChasm = bridgePath.some(tile => tile[0] === x && tile[1] === y);
         const px = x * tileSize;
         const py = y * tileSize;
 
@@ -85,9 +124,26 @@
       }
     }
 
-    // Show avatar at top once bridge is complete
     if (builtTiles.length === bridgePath.length) {
-      ctx.drawImage(avatar, 4 * tileSize + 2, 0 * tileSize + 2, tileSize - 4, tileSize - 4);
+      const [lastX, lastY] = bridgePath[bridgePath.length - 1];
+      ctx.drawImage(avatar, lastX * tileSize + 2, lastY * tileSize + 2, tileSize - 4, tileSize - 4);
+    }
+  }
+
+  function nextRound() {
+    currentRound++;
+    updateLoveMeter();
+    if (currentRound < rounds.length) {
+      bridgePath = rounds[currentRound];
+      builtTiles = [];
+      document.getElementById('message').textContent = `Round ${currentRound + 1}: Keep building the bridge...`;
+      setTimeout(drawGrid, 500);
+    } else {
+      document.getElementById('message').textContent = "All bridges rebuilt. Connection fully restored 💖";
+      updateLoveMeter();
+      setTimeout(() => {
+        window.parent.postMessage('bridgeComplete', '*');
+      }, 2500);
     }
   }
 
@@ -107,12 +163,9 @@
 
       if (builtTiles.length === bridgePath.length) {
         document.getElementById('message').textContent = "Connection rebuilt!";
-        setTimeout(() => {
-          window.parent.postMessage('bridgeComplete', '*');
-        }, 2500);
+        setTimeout(nextRound, 2000);
       }
     } else {
-      // Animate wrong click (flash red)
       canvas.style.backgroundColor = 'darkred';
       setTimeout(() => {
         canvas.style.backgroundColor = '#000';
@@ -122,7 +175,10 @@
 
   canvas.addEventListener("click", handleClick);
 
-  avatar.onload = drawGrid;
+  avatar.onload = () => {
+    updateLoveMeter();
+    drawGrid();
+  };
 </script>
 
 </body>
