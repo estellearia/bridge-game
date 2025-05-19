@@ -248,20 +248,26 @@
       });
     }
 
-    function showFinalDialogue() {
-      document.getElementById('endDialogue').style.display = 'flex';
-      const text = "*You reached me...\nAnd rebuilt everything we had.*";
-      const dialogueText = document.getElementById('dialogueText');
-      dialogueText.textContent = '';
-      let i = 0;
-      function typeChar() {
-        if (i < text.length) {
-          dialogueText.textContent += text[i++];
-          setTimeout(typeChar, 50);
-        }
-      }
-      typeChar();
+function showFinalDialogue() {
+  document.getElementById('endDialogue').style.display = 'flex';
+  const text = "*You reached me...\nAnd rebuilt everything we had.*";
+  const dialogueText = document.getElementById('dialogueText');
+  const buttonRow = document.getElementById('buttonRow');
+  dialogueText.textContent = '';
+  buttonRow.style.display = 'none'; // Hide buttons initially
+
+  let i = 0;
+  function typeChar() {
+    if (i < text.length) {
+      dialogueText.textContent += text[i++];
+      setTimeout(typeChar, 50);
+    } else {
+      // Show buttons after typing is complete
+      buttonRow.style.display = 'flex';
     }
+  }
+  typeChar();
+}
 
     function nextRound() {
       currentRound++;
