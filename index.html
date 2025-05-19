@@ -21,7 +21,7 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 10px 0;
+      padding: 10px;
     }
 
     #loveMeter {
@@ -46,20 +46,20 @@
       display: block;
     }
 
+    #hint {
+      font-size: 8px;
+      color: #87cefa;
+      position: absolute;
+      top: 5px;
+      left: 5px;
+    }
+
     #message {
       font-size: 10px;
       color: #87cefa;
       margin-top: 10px;
       text-align: center;
       min-height: 24px;
-    }
-
-    #hint {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      font-size: 8px;
-      color: #555;
     }
 
     #endDialogue {
@@ -111,8 +111,6 @@
       padding: 5px 15px;
       font-size: 10px;
       cursor: pointer;
-      transition: all 0.2s ease;
-      user-select: none;
       min-width: 80px;
     }
 
@@ -123,7 +121,7 @@
   </style>
 </head>
 <body>
-  <div id="hint">Hint: Start from the glowing tile</div>
+  <div id="hint">Hint: ???</div>
   <div id="gameWrapper">
     <div id="loveMeter">
       <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
@@ -134,7 +132,7 @@
     </div>
 
     <canvas id="bridgeCanvas"></canvas>
-    <div id="message">Tap the tiles in order to build a bridge and reach Aria.</div>
+    <div id="message">Tap the correct tiles to rebuild the bridge.</div>
   </div>
 
   <div id="endDialogue" style="display: none;">
@@ -164,85 +162,89 @@
     const filledHeart = "https://i.imgur.com/B6yELT6.png";
 
     let currentRound = 0;
-    let bridgePath = [];
     let builtTiles = [];
-    let visibilityMap = [];
-    let specialTiles = [];
+    let path = [];
+    let switches = [];
+    let decoys = [];
+    let revealed = [];
 
-    function updateLoveMeter() {
-      document.querySelectorAll("#loveMeter img").forEach((img, i) => {
-        img.src = i < currentRound ? filledHeart : emptyHeart;
-      });
-    }
-
-    function generateRandomPath() {
-      let path = [];
-      let x = Math.floor(Math.random() * cols);
-      for (let y = rows - 1; y >= 0; y--) {
-        path.push([x, y]);
-        if (Math.random() < 0.5 && x > 0) x--;
-        else if (x < cols - 1) x++;
+    function generateRound(round) {
+      const length = 5 + round * 2;
+      const startX = Math.floor(Math.random() * (cols - 1));
+      const startY = Math.floor(Math.random() * (rows - 1));
+      path = [[startX, startY]];
+      for (let i = 1; i < length; i++) {
+        let [x, y] = path[path.length - 1];
+        let options = [[x+1,y],[x-1,y],[x,y+1],[x,y-1]].filter(([nx,ny]) =>
+          nx >= 0 && nx < cols && ny >= 0 && ny < rows &&
+          !path.some(([px,py]) => px === nx && py === ny)
+        );
+        if (options.length === 0) break;
+        path.push(options[Math.floor(Math.random()*options.length)]);
       }
-      return path;
-    }
 
-    function generateSpecialTiles(path) {
-      let specials = [];
-      for (let i = 1; i < path.length - 1; i++) {
-        if (Math.random() < 0.2) {
-          specials.push({ x: path[i][0], y: path[i][1], type: 'switch' });
-        } else if (Math.random() < 0.1) {
-          specials.push({ x: path[i][0], y: path[i][1], type: 'fake' });
+      // Generate switch and decoy tiles
+      switches = [];
+      decoys = [];
+      if (round > 1) {
+        for (let i = 0; i < round; i++) {
+          const sx = Math.floor(Math.random() * cols);
+          const sy = Math.floor(Math.random() * rows);
+          if (!path.some(p => p[0] === sx && p[1] === sy)) switches.push([sx, sy]);
         }
       }
-      return specials;
-    }
+      if (round > 2) {
+        for (let i = 0; i < round * 2; i++) {
+          const dx = Math.floor(Math.random() * cols);
+          const dy = Math.floor(Math.random() * rows);
+          if (!path.some(p => p[0] === dx && p[1] === dy) && !switches.some(s => s[0] === dx && s[1] === dy)) {
+            decoys.push([dx, dy]);
+          }
+        }
+      }
 
-    function initializeVisibilityMap() {
-      visibilityMap = Array.from({ length: rows }, () => Array(cols).fill(false));
+      revealed = [path[0]];
+      builtTiles = [];
+      document.getElementById("hint").textContent = `Hint: Starts at (${path[0][0]},${path[0][1]})`;
     }
 
     function drawGrid() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
-          const isBuilt = builtTiles.some(tile => tile[0] === x && tile[1] === y);
-          const isVisible = visibilityMap[y][x];
           const px = x * tileSize;
           const py = y * tileSize;
-          if (isBuilt) {
-            ctx.fillStyle = "#ccc";
-          } else if (isVisible) {
-            ctx.fillStyle = "#222";
-          } else {
+          const isBuilt = builtTiles.some(t => t[0] === x && t[1] === y);
+          const isRevealed = revealed.some(t => t[0] === x && t[1] === y);
+
+          if (!isRevealed) {
             ctx.fillStyle = "#000";
+          } else if (isBuilt) {
+            ctx.fillStyle = "#ccc";
+          } else if (switches.some(t => t[0] === x && t[1] === y)) {
+            ctx.fillStyle = "#4B0082"; // purple switch
+          } else if (decoys.some(t => t[0] === x && t[1] === y)) {
+            ctx.fillStyle = "#550000"; // red decoy
+          } else {
+            ctx.fillStyle = "#222";
           }
+
           ctx.fillRect(px, py, tileSize, tileSize);
           ctx.strokeStyle = "#444";
           ctx.strokeRect(px, py, tileSize, tileSize);
         }
       }
-      if (builtTiles.length === bridgePath.length) {
-        const [lastX, lastY] = bridgePath[bridgePath.length - 1];
+
+      if (builtTiles.length === path.length) {
+        const [lastX, lastY] = path[path.length - 1];
         ctx.drawImage(avatar, lastX * tileSize + 2, lastY * tileSize + 2, tileSize - 4, tileSize - 4);
       }
     }
 
-    function nextRound() {
-      currentRound++;
-      updateLoveMeter();
-      if (currentRound < 5) {
-        bridgePath = generateRandomPath();
-        builtTiles = [];
-        specialTiles = generateSpecialTiles(bridgePath);
-        initializeVisibilityMap();
-        visibilityMap[bridgePath[0][1]][bridgePath[0][0]] = true;
-        document.getElementById('message').textContent = `Round ${currentRound + 1}: Keep building the bridge...`;
-        drawGrid();
-      } else {
-        document.getElementById('message').textContent = "All bridges rebuilt...";
-        setTimeout(showFinalDialogue, 1500);
-      }
+    function updateLoveMeter() {
+      document.querySelectorAll("#loveMeter img").forEach((img, i) => {
+        img.src = i < currentRound ? filledHeart : emptyHeart;
+      });
     }
 
     function showFinalDialogue() {
@@ -260,48 +262,74 @@
       typeChar();
     }
 
-    function retryGame() {
-      currentRound = 0;
-      bridgePath = generateRandomPath();
-      builtTiles = [];
-      specialTiles = generateSpecialTiles(bridgePath);
-      initializeVisibilityMap();
-      visibilityMap[bridgePath[0][1]][bridgePath[0][0]] = true;
-      document.getElementById('endDialogue').style.display = 'none';
-      document.getElementById('message').textContent = "Tap the tiles in order to build a bridge and reach Aria.";
+    function nextRound() {
+      currentRound++;
       updateLoveMeter();
+      if (currentRound >= 5) return showFinalDialogue();
+      generateRound(currentRound);
       drawGrid();
+      document.getElementById('message').textContent = `Round ${currentRound + 1}: Keep building...`;
     }
 
-    canvas.addEventListener("click", (e) => {
+    function handleClick(event) {
       const rect = canvas.getBoundingClientRect();
-      const x = Math.floor((e.clientX - rect.left) / tileSize);
-      const y = Math.floor((e.clientY - rect.top) / tileSize);
-      const nextTile = bridgePath[builtTiles.length];
-      if (nextTile && x === nextTile[0] && y === nextTile[1]) {
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = Math.floor((event.clientX - rect.left) * scaleX / tileSize);
+      const y = Math.floor((event.clientY - rect.top) * scaleY / tileSize);
+
+      if (switches.some(t => t[0] === x && t[1] === y)) {
+        document.getElementById('message').textContent = "Switch activated!";
+        // Reveal all tiles when switch is hit
+        revealed = Array.from({length: cols * rows}, (_, i) => [i % cols, Math.floor(i / cols)]);
+        drawGrid();
+        return;
+      }
+
+      const nextTile = path[builtTiles.length];
+      if (x === nextTile[0] && y === nextTile[1]) {
         builtTiles.push([x, y]);
-        visibilityMap[y][x] = true;
-        const nextIdx = builtTiles.length;
-        if (nextIdx < bridgePath.length) {
-          const [nx, ny] = bridgePath[nextIdx];
-          visibilityMap[ny][nx] = true;
+        if (builtTiles.length < path.length) {
+          revealed.push(path[builtTiles.length]);
         }
         drawGrid();
-        if (builtTiles.length === bridgePath.length) {
-          setTimeout(nextRound, 1000);
+        if (builtTiles.length === path.length) {
+          document.getElementById('message').textContent = "Connection rebuilt!";
+          setTimeout(nextRound, 1500);
         }
-      } else {
-        document.getElementById('message').textContent = "That tile doesn’t feel right...";
+      } else if (decoys.some(t => t[0] === x && t[1] === y)) {
+        builtTiles = [];
+        revealed = [path[0]];
+        document.getElementById('message').textContent = "It's a trap! Try again.";
+        drawGrid();
       }
-    });
+    }
 
-    document.getElementById("retryBtn").onclick = retryGame;
-    document.getElementById("continueBtn").onclick = () => {
-      document.getElementById('message').textContent = "Thank you for playing 💙";
+    function retryGame() {
+      currentRound = 0;
+      updateLoveMeter();
+      generateRound(currentRound);
+      drawGrid();
       document.getElementById('endDialogue').style.display = 'none';
-    };
+      document.getElementById('message').textContent = "Tap the correct tiles to rebuild the bridge.";
+    }
 
-    retryGame();
+    function continueGame() {
+      document.getElementById('endDialogue').style.display = 'none';
+      if (window.parent !== window) {
+        window.parent.postMessage('bridgeComplete', '*');
+      } else {
+        window.location.href = '#bridgecorrect';
+      }
+    }
+
+    document.getElementById('retryBtn').addEventListener('click', retryGame);
+    document.getElementById('continueBtn').addEventListener('click', continueGame);
+    canvas.addEventListener("click", handleClick);
+
+    generateRound(currentRound);
+    updateLoveMeter();
+    drawGrid();
   </script>
 </body>
 </html>
