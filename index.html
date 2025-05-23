@@ -8,67 +8,116 @@
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
     html, body {
+      height: 100%;
       margin: 0;
       padding: 0;
-      background: black;
+      background: #07070c;
       color: white;
       font-family: 'Press Start 2P', monospace;
+      min-height: 100vh;
+      width: 100vw;
     }
 
-    #gameWrapper {
+    body {
+      min-height: 100vh;
+      width: 100vw;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      box-sizing: border-box;
+    }
+
+    #container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
       min-height: 100vh;
-      padding: 10px;
+      width: 100vw;
+      background: #07070c;
+      box-sizing: border-box;
+    }
+
+    #gameWrapper {
+      background: #10101b;
+      border: 3px solid #fff;
+      border-radius: 18px;
+      box-shadow: 0 0 32px #222, 0 0 0 5px #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 56px 0 0 0;
+      padding: 36px 32px 32px 32px;
+      min-width: 340px;
+      max-width: 98vw;
     }
 
     #loveMeter {
       display: flex;
-      gap: 6px;
-      margin-bottom: 10px;
+      gap: 8px;
+      margin-bottom: 16px;
     }
 
     #loveMeter img {
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       image-rendering: pixelated;
+      filter: drop-shadow(0 0 2px #222);
+    }
+
+    #hint {
+      font-size: 11px;
+      color: #87cefa;
+      width: 100%;
+      margin-bottom: 8px;
+      padding-left: 4px;
+      text-align: left;
+      letter-spacing: 0.2px;
+      text-shadow: 0 1px 0 #1a1a2f;
+    }
+
+    #roundNarration {
+      font-size: 12px;
+      color: #FFEB3B;
+      margin-bottom: 12px;
+      min-height: 16px;
+      text-align: center;
+      text-shadow: 0 0 2px #222;
     }
 
     canvas {
       width: 320px;
       height: 320px;
-      border: 3px solid white;
-      background: #000;
+      border: 3px solid #fff;
+      background: #07070c;
+      border-radius: 12px;
       image-rendering: pixelated;
       cursor: pointer;
       display: block;
-    }
-
-    #hint {
-      font-size: 8px;
-      color: #87cefa;
-      position: absolute;
-      top: 5px;
-      left: 5px;
+      box-shadow: 0 0 8px #222;
+      margin-bottom: 14px;
     }
 
     #message {
-      font-size: 10px;
-      color: #87cefa;
-      margin-top: 10px;
+      font-size: 11px;
+      color: #aedcff;
+      margin-top: 12px;
       text-align: center;
-      min-height: 24px;
+      min-height: 28px;
+      letter-spacing: 0.1em;
+      padding: 0 5px;
+      text-shadow: 0 1px 0 #111;
     }
 
     #endDialogue {
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.95);
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.97);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -76,63 +125,96 @@
       z-index: 10;
       padding: 20px;
       box-sizing: border-box;
+      animation: fadeIn 0.6s;
     }
 
     #dialogueBox {
-      background: #111;
+      background: #191933;
       border: 3px solid white;
-      padding: 20px;
-      width: 90%;
-      max-width: 320px;
+      border-radius: 14px;
+      padding: 28px 24px;
+      width: 95vw;
+      max-width: 340px;
       text-align: left;
-      box-shadow: 0 0 10px #87cefa;
+      box-shadow: 0 0 16px #87cefa, 0 0 2px #111;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     #dialogueText {
-      font-size: 10px;
+      font-size: 12px;
       line-height: 1.5;
       white-space: pre-line;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       color: #87cefa;
       min-height: 40px;
+      text-align: center;
+      letter-spacing: 0.03em;
     }
 
     #buttonRow {
       display: flex;
-      gap: 20px;
+      gap: 28px;
       justify-content: center;
     }
 
     button {
-      background: black;
+      background: #141425;
       border: 2px solid white;
       color: white;
       font-family: 'Press Start 2P', monospace;
-      padding: 5px 15px;
-      font-size: 10px;
+      padding: 7px 18px;
+      font-size: 11px;
+      border-radius: 6px;
       cursor: pointer;
-      min-width: 80px;
+      min-width: 90px;
+      transition: background 0.18s, color 0.18s;
     }
 
     button:hover {
       background: white;
-      color: black;
+      color: #191933;
+    }
+
+    @media (max-width: 480px) {
+      #gameWrapper {
+        padding: 12vw 2vw 12vw 2vw;
+        min-width: 0;
+        max-width: 99vw;
+      }
+      canvas {
+        width: 90vw;
+        height: 90vw;
+        max-width: 335px;
+        max-height: 335px;
+      }
+      #dialogueBox {
+        padding: 16px 5vw;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
   </style>
 </head>
 <body>
-  <div id="hint">Hint: ???</div>
-  <div id="gameWrapper">
-    <div id="loveMeter">
-      <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
-      <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
-      <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
-      <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
-      <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+  <div id="container">
+    <div id="gameWrapper">
+      <div id="loveMeter">
+        <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+        <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+        <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+        <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+        <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
+      </div>
+      <div id="hint">Hint: ???</div>
+      <div id="roundNarration">Let’s build this bridge, one memory at a time!</div>
+      <canvas id="bridgeCanvas"></canvas>
+      <div id="message">Tap the correct tiles to rebuild the bridge.</div>
     </div>
-
-    <canvas id="bridgeCanvas"></canvas>
-    <div id="message">Tap the correct tiles to rebuild the bridge.</div>
   </div>
 
   <div id="endDialogue" style="display: none;">
@@ -209,6 +291,13 @@
       document.getElementById("hint").textContent = `Hint: Starts at (${path[0][0]},${path[0][1]})`;
     }
 
+    function updateRoundNarration() {
+      const narration = currentRound === 0
+        ? "Let’s build this bridge, one memory at a time!"
+        : "It’s getting trickier—keep your eyes sharp and your heart steady!";
+      document.getElementById("roundNarration").textContent = narration;
+    }
+
     function drawGrid() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let y = 0; y < rows; y++) {
@@ -219,19 +308,20 @@
           const isRevealed = revealed.some(t => t[0] === x && t[1] === y) || switchRevealed;
 
           if (!isRevealed) {
-            ctx.fillStyle = "#000";
+            ctx.fillStyle = "#07070c";
           } else if (isBuilt) {
-            ctx.fillStyle = "#ccc";
+            ctx.fillStyle = "#e0e0e0";
           } else if (switches.some(t => t[0] === x && t[1] === y)) {
             ctx.fillStyle = "#4B0082";
           } else if (decoys.some(t => t[0] === x && t[1] === y)) {
             ctx.fillStyle = "#550000";
           } else {
-            ctx.fillStyle = "#222";
+            ctx.fillStyle = "#282945";
           }
 
           ctx.fillRect(px, py, tileSize, tileSize);
-          ctx.strokeStyle = "#444";
+          ctx.strokeStyle = "#44476b";
+          ctx.lineWidth = 1.3;
           ctx.strokeRect(px, py, tileSize, tileSize);
         }
       }
@@ -248,34 +338,35 @@
       });
     }
 
-function showFinalDialogue() {
-  document.getElementById('endDialogue').style.display = 'flex';
-  const text = "*You've reached Aria...";
-  const dialogueText = document.getElementById('dialogueText');
-  const buttonRow = document.getElementById('buttonRow');
-  dialogueText.textContent = '';
-  buttonRow.style.display = 'none'; // Hide buttons initially
+    function showFinalDialogue() {
+      document.getElementById('endDialogue').style.display = 'flex';
+      const text = "*You’ve reached Aria...*";
+      const dialogueText = document.getElementById('dialogueText');
+      const buttonRow = document.getElementById('buttonRow');
+      dialogueText.textContent = '';
+      buttonRow.style.display = 'none'; // Hide buttons initially
 
-  let i = 0;
-  function typeChar() {
-    if (i < text.length) {
-      dialogueText.textContent += text[i++];
-      setTimeout(typeChar, 50);
-    } else {
-      // Show buttons after typing is complete
-      buttonRow.style.display = 'flex';
+      let i = 0;
+      function typeChar() {
+        if (i < text.length) {
+          dialogueText.textContent += text[i++];
+          setTimeout(typeChar, 42);
+        } else {
+          // Show buttons after typing is complete
+          buttonRow.style.display = 'flex';
+        }
+      }
+      typeChar();
     }
-  }
-  typeChar();
-}
 
     function nextRound() {
       currentRound++;
       updateLoveMeter();
+      updateRoundNarration();
       if (currentRound >= 5) return showFinalDialogue();
       generateRound(currentRound);
       drawGrid();
-      document.getElementById('message').textContent = `Round ${currentRound + 1}: Keep building...`;
+      document.getElementById('message').textContent = "Bridge restored! Ready for the next challenge?";
     }
 
     function handleClick(event) {
@@ -287,7 +378,7 @@ function showFinalDialogue() {
 
       if (switches.some(t => t[0] === x && t[1] === y)) {
         switchRevealed = !switchRevealed;
-        document.getElementById('message').textContent = switchRevealed ? "Switch activated!" : "Switch deactivated.";
+        document.getElementById('message').textContent = "You found a switch! Wonder what it does...";
         drawGrid();
         return;
       }
@@ -300,14 +391,16 @@ function showFinalDialogue() {
         }
         drawGrid();
         if (builtTiles.length === path.length) {
-          document.getElementById('message').textContent = "Connection rebuilt!";
+          document.getElementById('message').textContent = "Bridge restored! Ready for the next challenge?";
           setTimeout(nextRound, 1500);
+        } else {
+          document.getElementById('message').textContent = "Nice! The bridge is coming together!";
         }
       } else {
         builtTiles = [];
         revealed = [path[0]];
         switchRevealed = false;
-        document.getElementById('message').textContent = "Wrong tile! Returning to start...";
+        document.getElementById('message').textContent = "Oops! Wrong step—let’s try again from the start!";
         drawGrid();
       }
     }
@@ -317,13 +410,13 @@ function showFinalDialogue() {
       updateLoveMeter();
       generateRound(currentRound);
       drawGrid();
+      updateRoundNarration();
       document.getElementById('endDialogue').style.display = 'none';
       document.getElementById('message').textContent = "Tap the correct tiles to rebuild the bridge.";
     }
 
     function continueGame() {
       document.getElementById('endDialogue').style.display = 'none';
-      // Always redirect to fragment1.html
       window.location.href = 'https://estellearia.github.io/aria-messages/fragment4.html';
     }
 
@@ -333,6 +426,7 @@ function showFinalDialogue() {
 
     generateRound(currentRound);
     updateLoveMeter();
+    updateRoundNarration();
     drawGrid();
   </script>
 </body>
