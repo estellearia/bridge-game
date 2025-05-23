@@ -63,24 +63,32 @@
       justify-content: flex-start;
       overflow: hidden;
     }
+    #narration {
+      font-size: 10px;
+      color: #ffe066;
+      margin: 18px 0 6px 0;
+      min-height: 36px;
+      width: 90%;
+      text-align: center;
+      letter-spacing: 0.03em;
+      text-shadow: 0 1px 0 #222;
+      background: transparent;
+      border: none;
+      font-family: 'Press Start 2P', monospace;
+      white-space: pre-line;
+      pointer-events: none;
+      user-select: none;
+    }
     #loveMeter {
       display: flex;
       gap: 6px;
       margin-bottom: 10px;
-      margin-top: 20px;
+      margin-top: 0;
     }
     #loveMeter img {
       width: 20px;
       height: 20px;
       image-rendering: pixelated;
-    }
-    #hint {
-      font-size: 8px;
-      color: #87cefa;
-      margin-bottom: 8px;
-      align-self: flex-start;
-      text-shadow: 0 1px 0 #111;
-      margin-left: 10px;
     }
     canvas {
       width: 320px;
@@ -179,7 +187,7 @@
   <button id="skipBtn" title="Skip the game">Skip</button>
   <div id="centerer">
     <div id="uiContainer">
-      <div id="hint">Hint: ???</div>
+      <div id="narration"></div>
       <div id="loveMeter">
         <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
         <img src="https://i.imgur.com/sgbCLlS.png" alt="Empty heart" />
@@ -205,6 +213,34 @@
     document.getElementById('skipBtn').onclick = function() {
       window.location.href = "#bridgecorrect";
     };
+
+    const narrationLines = [
+      "The path has broken.\nCan you rebuild the connection?",
+      "Each step brings you closer.\nBut choose wisely...",
+      "Some tiles may trick you.\nStay focused.",
+      "Switches and decoys appear...\nFollow your heart.",
+      "The last bridge to rebuild.\nAria waits for you at the end."
+    ];
+
+    function typeNarration(text, cb) {
+      const el = document.getElementById('narration');
+      el.textContent = "";
+      let i = 0;
+      function type() {
+        if (i < text.length) {
+          el.textContent += text[i++];
+          setTimeout(type, text[i-1] === "\n" ? 200 : 28);
+        } else if (cb) {
+          cb();
+        }
+      }
+      type();
+    }
+
+    // Narration logic: Set per round
+    function updateNarration(round) {
+      typeNarration(narrationLines[Math.min(round, narrationLines.length-1)]);
+    }
 
     const canvas = document.getElementById("bridgeCanvas");
     const ctx = canvas.getContext("2d");
@@ -266,7 +302,7 @@
       revealed = [path[0]];
       builtTiles = [];
       switchRevealed = false;
-      document.getElementById("hint").textContent = `Hint: Starts at (${path[0][0]},${path[0][1]})`;
+      updateNarration(round);
     }
 
     function drawGrid() {
