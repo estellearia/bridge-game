@@ -211,7 +211,7 @@
   <script>
     // Skip button logic
     document.getElementById('skipBtn').onclick = function() {
-      window.location.href = "#bridgecorrect";
+      window.location.href = "https://estellearia.github.io/aria-messages/introduction.html";
     };
 
     const narrationLines = [
@@ -229,7 +229,7 @@
       function type() {
         if (i < text.length) {
           el.textContent += text[i++];
-          setTimeout(type, text[i-1] === "\n" ? 200 : 28);
+          setTimeout(type, text[i-1] === "\n" ? 200 : 55);
         } else if (cb) {
           cb();
         }
@@ -420,7 +420,7 @@
       if (window.parent !== window) {
         window.parent.postMessage('bridgeComplete', '*');
       } else {
-        window.location.href = '#bridgecorrect';
+        window.location.href = 'https://estellearia.github.io/aria-messages/introduction.html';
       }
     }
 
