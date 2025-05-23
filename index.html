@@ -323,11 +323,8 @@ function showFinalDialogue() {
 
     function continueGame() {
       document.getElementById('endDialogue').style.display = 'none';
-      if (window.parent !== window) {
-        window.parent.postMessage('bridgeComplete', '*');
-      } else {
-        window.location.href = '#bridgecorrect';
-      }
+      // Always redirect to fragment1.html
+      window.location.href = 'https://estellearia.github.io/aria-messages/fragment1.html';
     }
 
     document.getElementById('retryBtn').addEventListener('click', retryGame);
